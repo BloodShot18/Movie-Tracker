@@ -1,0 +1,21 @@
+{
+  "routes": [
+    {
+      "routePath": "/api/entries",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/entries.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/entries",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/entries.js:onRequestPost"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}
