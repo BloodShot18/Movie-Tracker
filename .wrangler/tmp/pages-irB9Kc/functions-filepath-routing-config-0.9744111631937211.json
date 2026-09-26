@@ -1,0 +1,29 @@
+{
+  "routes": [
+    {
+      "routePath": "/api/entries/:id",
+      "mountPath": "/api/entries",
+      "method": "DELETE",
+      "module": [
+        "api/entries/[id].js:onRequestDelete"
+      ]
+    },
+    {
+      "routePath": "/api/entries",
+      "mountPath": "/api",
+      "method": "GET",
+      "module": [
+        "api/entries.js:onRequestGet"
+      ]
+    },
+    {
+      "routePath": "/api/entries",
+      "mountPath": "/api",
+      "method": "POST",
+      "module": [
+        "api/entries.js:onRequestPost"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}
