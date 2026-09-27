@@ -18,7 +18,6 @@
     --brass: #B8863A;
     --brass-bright: #D8A94E;
   }
-  :root:not([data-theme="light"]) { }
   @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) {
       --bg: #E3DBC7;
@@ -78,9 +77,40 @@
   .sub {
     font-size: 13px;
     color: var(--rule);
-    margin: 10px 0 28px;
+    margin: 10px 0 14px;
     line-height: 1.5;
     max-width: 46ch;
+  }
+  .room-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--rule);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .room-bar .room-name { color: var(--brass-bright); }
+  .room-bar button.linklike {
+    background: none;
+    border: none;
+    color: var(--brass-bright);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+  .room-bar input {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--rule);
+    color: var(--paper);
+    padding: 2px 4px;
+    outline: none;
+    width: 120px;
   }
 
   .ticket {
@@ -121,12 +151,12 @@
     outline: none;
   }
   .field input:focus { border-bottom-color: var(--brass); }
-  .kind-group {
+  .pill-group {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
   }
-  .kind-pill {
+  .pill {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     padding: 6px 12px;
@@ -137,10 +167,26 @@
     color: var(--ink);
     user-select: none;
   }
-  .kind-pill[aria-pressed="true"] {
+  .pill[aria-pressed="true"] {
     background: var(--brass);
     border-color: var(--brass);
     color: var(--paper-hi);
+  }
+  .filter-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 5px 10px;
+    border: 1.5px solid var(--rule);
+    border-radius: 999px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--paper);
+    user-select: none;
+  }
+  .filter-pill[aria-pressed="true"] {
+    background: var(--brass-bright);
+    border-color: var(--brass-bright);
+    color: var(--ink);
   }
   .noteinput {
     width: 100%;
@@ -154,6 +200,7 @@
     outline: none;
   }
   .noteinput:focus { border-bottom-color: var(--brass); }
+  #room-code-field { display: none; }
   .punch {
     margin-top: 16px;
     width: 100%;
@@ -170,6 +217,12 @@
   .punch:disabled { opacity: 0.5; cursor: not-allowed; }
   .punch:hover:not(:disabled) { background: var(--brass); }
 
+  .genre-filter {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
   .feed-head {
     display: flex;
     justify-content: space-between;
@@ -225,6 +278,9 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
+  .entry-meta .watched-count {
+    color: var(--rule);
+  }
   .entry-note {
     font-size: 12.5px;
     color: var(--rule);
@@ -254,9 +310,18 @@
 <div class="page">
   <div class="masthead">
     <h1>Tonight's Reel</h1>
-    <div class="tally" id="tally">— today</div>
+    <div class="tally" id="tally">— this week</div>
   </div>
   <p class="sub">A shared log of what everyone's been watching this past week. Punch in a title when you finish it — the ledger below fills in live for anyone with the page open.</p>
+
+  <div class="room-bar" id="room-bar">
+    <span>Viewing: <span class="room-name" id="room-label">Public</span></span>
+    <button class="linklike" id="room-switch-btn" type="button">Enter a room →</button>
+    <span id="room-entry-box" style="display:none;">
+      <input id="room-code-input" type="text" maxlength="40" placeholder="room code">
+      <button class="linklike" id="room-go-btn" type="button">Go</button>
+    </span>
+  </div>
 
   <div class="ticket">
     <div class="row2">
@@ -271,11 +336,26 @@
     </div>
     <div class="field">
       <label>What kind</label>
-      <div class="kind-group" id="kind-group">
-        <button class="kind-pill" data-kind="Movie" aria-pressed="true" type="button">Movie</button>
-        <button class="kind-pill" data-kind="Episode" aria-pressed="false" type="button">Episode</button>
-        <button class="kind-pill" data-kind="Series" aria-pressed="false" type="button">Series</button>
+      <div class="pill-group" id="kind-group">
+        <button class="pill" data-value="Movie" aria-pressed="true" type="button">Movie</button>
+        <button class="pill" data-value="Episode" aria-pressed="false" type="button">Episode</button>
+        <button class="pill" data-value="Series" aria-pressed="false" type="button">Series</button>
       </div>
+    </div>
+    <div class="field">
+      <label>Genre</label>
+      <div class="pill-group" id="genre-group"></div>
+    </div>
+    <div class="field">
+      <label>Visibility</label>
+      <div class="pill-group" id="visibility-group">
+        <button class="pill" data-value="public" aria-pressed="true" type="button">Public</button>
+        <button class="pill" data-value="private" aria-pressed="false" type="button">Private (room)</button>
+      </div>
+    </div>
+    <div class="field" id="room-code-field">
+      <label for="f-room">Room code</label>
+      <input id="f-room" type="text" maxlength="40" placeholder="roommates47">
     </div>
     <div class="field">
       <label for="f-note">One line, optional</label>
@@ -283,6 +363,8 @@
     </div>
     <button class="punch" id="punch-btn" type="button">Log it →</button>
   </div>
+
+  <div class="genre-filter" id="genre-filter"></div>
 
   <div class="feed-head">
     <span>Logged this week</span>
@@ -294,15 +376,56 @@
 
 <script>
 (function () {
+  var GENRES = ["Drama", "Comedy", "Action", "Thriller", "Horror", "Sci-Fi", "Romance", "Documentary", "Animation", "Other"];
+
   var kind = "Movie";
-  var group = document.getElementById("kind-group");
-  group.addEventListener("click", function (e) {
-    var btn = e.target.closest(".kind-pill");
-    if (!btn) return;
-    kind = btn.dataset.kind;
-    Array.from(group.children).forEach(function (b) {
-      b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+  var genre = "Other";
+  var visibility = "public";
+  var filterGenre = "";
+  var room = "";
+
+  try { room = localStorage.getItem("watchlog_room") || ""; } catch (e) {}
+
+  function wirePillGroup(groupEl, onChange, defaultValue) {
+    groupEl.addEventListener("click", function (e) {
+      var b = e.target.closest(".pill");
+      if (!b) return;
+      Array.from(groupEl.children).forEach(function (c) {
+        c.setAttribute("aria-pressed", c === b ? "true" : "false");
+      });
+      onChange(b.dataset.value);
     });
+  }
+
+  var kindGroup = document.getElementById("kind-group");
+  wirePillGroup(kindGroup, function (v) { kind = v; });
+
+  var visGroup = document.getElementById("visibility-group");
+  var roomCodeField = document.getElementById("room-code-field");
+  wirePillGroup(visGroup, function (v) {
+    visibility = v;
+    roomCodeField.style.display = v === "private" ? "block" : "none";
+  });
+
+  var genreGroup = document.getElementById("genre-group");
+  genreGroup.innerHTML = GENRES.map(function (g, i) {
+    return '<button class="pill" data-value="' + g + '" aria-pressed="' + (i === GENRES.length - 1 ? "true" : "false") + '" type="button">' + g + '</button>';
+  }).join("");
+  wirePillGroup(genreGroup, function (v) { genre = v; });
+
+  var genreFilterEl = document.getElementById("genre-filter");
+  genreFilterEl.innerHTML = '<button class="filter-pill" data-value="" aria-pressed="true" type="button">All genres</button>' +
+    GENRES.map(function (g) {
+      return '<button class="filter-pill" data-value="' + g + '" aria-pressed="false" type="button">' + g + '</button>';
+    }).join("");
+  genreFilterEl.addEventListener("click", function (e) {
+    var b = e.target.closest(".filter-pill");
+    if (!b) return;
+    Array.from(genreFilterEl.children).forEach(function (c) {
+      c.setAttribute("aria-pressed", c === b ? "true" : "false");
+    });
+    filterGenre = b.dataset.value;
+    load();
   });
 
   function todayStr() {
@@ -333,8 +456,44 @@
   var nameEl = document.getElementById("f-name");
   var titleEl = document.getElementById("f-title");
   var noteEl = document.getElementById("f-note");
+  var roomInputEl = document.getElementById("f-room");
 
-  var lastName = "";
+  var roomLabelEl = document.getElementById("room-label");
+  var roomSwitchBtn = document.getElementById("room-switch-btn");
+  var roomEntryBox = document.getElementById("room-entry-box");
+  var roomCodeInput = document.getElementById("room-code-input");
+  var roomGoBtn = document.getElementById("room-go-btn");
+
+  function refreshRoomBar() {
+    if (room) {
+      roomLabelEl.textContent = "Room \"" + room + "\"";
+      roomSwitchBtn.textContent = "← Back to public";
+    } else {
+      roomLabelEl.textContent = "Public";
+      roomSwitchBtn.textContent = "Enter a room →";
+    }
+    roomEntryBox.style.display = "none";
+  }
+  refreshRoomBar();
+
+  roomSwitchBtn.addEventListener("click", function () {
+    if (room) {
+      room = "";
+      try { localStorage.removeItem("watchlog_room"); } catch (e) {}
+      refreshRoomBar();
+      load();
+    } else {
+      roomEntryBox.style.display = roomEntryBox.style.display === "none" ? "inline-flex" : "none";
+    }
+  });
+  roomGoBtn.addEventListener("click", function () {
+    var code = roomCodeInput.value.trim();
+    if (!code) return;
+    room = code;
+    try { localStorage.setItem("watchlog_room", room); } catch (e) {}
+    refreshRoomBar();
+    load();
+  });
 
   function render(entries) {
     countEl.textContent = entries.length + (entries.length === 1 ? " entry" : " entries");
@@ -344,13 +503,17 @@
       return;
     }
     feedEl.innerHTML = entries.map(function (e) {
+      var watched = e.watchedCount ? ' · watched ' + e.watchedCount + '×' : '';
       return '<div class="entry" data-id="' + escapeHtml(e.id) + '">' +
         '<div class="entry-time">' + timeStr(e.createdAt) + '</div>' +
         '<div>' +
           '<div class="entry-title">' + escapeHtml(e.title) +
             '<button class="entry-del" data-id="' + escapeHtml(e.id) + '" title="Delete this entry" type="button">&times;</button>' +
           '</div>' +
-          '<div class="entry-meta">' + escapeHtml(e.name) + ' — <span class="kind-tag">' + escapeHtml(e.kind) + '</span></div>' +
+          '<div class="entry-meta">' + escapeHtml(e.name) + ' — <span class="kind-tag">' + escapeHtml(e.kind) + '</span>' +
+            (e.genre ? ' · ' + escapeHtml(e.genre) : '') +
+            '<span class="watched-count">' + watched + '</span>' +
+          '</div>' +
           (e.note ? '<div class="entry-note">' + escapeHtml(e.note) + '</div>' : '') +
         '</div>' +
       '</div>';
@@ -378,7 +541,10 @@
   var pollTimer = null;
 
   function load() {
-    fetch("/api/entries")
+    var params = new URLSearchParams();
+    if (room) params.set("room", room);
+    if (filterGenre) params.set("genre", filterGenre);
+    fetch("/api/entries?" + params.toString())
       .then(function (r) {
         if (!r.ok) throw new Error("status " + r.status);
         return r.json();
@@ -396,27 +562,40 @@
     var name = nameEl.value.trim();
     var title = titleEl.value.trim();
     var note = noteEl.value.trim();
+    var roomCode = roomInputEl.value.trim();
     if (!name || !title) {
       statusEl.textContent = "Add your name and a title before logging it.";
+      return;
+    }
+    if (visibility === "private" && !roomCode) {
+      statusEl.textContent = "Add a room code, or switch to Public.";
       return;
     }
     btn.disabled = true;
     fetch("/api/entries", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: name, title: title, kind: kind, note: note, day: todayStr() })
+      body: JSON.stringify({
+        name: name, title: title, kind: kind, note: note, day: todayStr(),
+        genre: genre, visibility: visibility,
+        room_code: visibility === "private" ? roomCode : ""
+      })
     })
       .then(function (r) {
         if (!r.ok) return r.json().then(function (e) { throw new Error(e.error || ("status " + r.status)); });
         return r.json();
       })
       .then(function () {
-        lastName = name;
         titleEl.value = "";
         noteEl.value = "";
         statusEl.textContent = "Logged. Keep going.";
         btn.disabled = false;
         titleEl.focus();
+        if (visibility === "private" && roomCode && !room) {
+          room = roomCode;
+          try { localStorage.setItem("watchlog_room", room); } catch (e) {}
+          refreshRoomBar();
+        }
         load();
       })
       .catch(function (err) {
